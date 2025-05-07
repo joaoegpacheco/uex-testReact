@@ -9,7 +9,7 @@ export const addContact = (userId, contactData) => {
   const allContacts = JSON.parse(localStorage.getItem('contacts') || '[]');
   
   const newContact = {
-    id: Date.now().toString(),
+    id: crypto.randomUUID(),
     userId,
     ...contactData,
     createdAt: new Date().toISOString()
