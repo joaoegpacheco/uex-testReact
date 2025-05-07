@@ -39,7 +39,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '16px', maxWidth: 400, margin: '50px auto' }}>
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '16px', margin: '50px auto' }}>
       <h2>Cadastro</h2>
 
       <md-outlined-text-field
