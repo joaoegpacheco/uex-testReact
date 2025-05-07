@@ -13,9 +13,9 @@ export function AuthProvider({ children }) {
 
   // Verificar se já existe um usuário logado ao iniciar a aplicação
   useEffect(() => {
-    const loggedUser = localStorage.getItem('currentUser');
-    if (loggedUser) {
-      setCurrentUser(JSON.parse(loggedUser));
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
@@ -24,19 +24,19 @@ export function AuthProvider({ children }) {
     return new Promise((resolve, reject) => {
       // Buscar usuários cadastrados
       const users = JSON.parse(localStorage.getItem('users') || '[]');
-      
+
       // Verificar se o usuário existe e a senha está correta
-      const user = users.find(user => user.email === email && user.password === password);
-      
-      if (user) {
-        // Salvar usuário logado no localStorage e no estado
-        const userInfo = { id: user.id, email: user.email };
-        localStorage.setItem('currentUser', JSON.stringify(userInfo));
-        setCurrentUser(userInfo);
-        resolve(userInfo);
-      } else {
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) {
         reject(new Error('Credenciais inválidas'));
+        return;
       }
+
+      // Salvar usuário logado no localStorage e no estado
+      const userInfo = { id: user.id, email: user.email };
+      localStorage.setItem('currentUser', JSON.stringify(userInfo));
+      setCurrentUser(userInfo);
+      resolve(userInfo);
     });
   };
 
@@ -44,13 +44,14 @@ export function AuthProvider({ children }) {
     return new Promise((resolve, reject) => {
       // Buscar usuários cadastrados
       const users = JSON.parse(localStorage.getItem('users') || '[]');
-      
+
       // Verificar se o e-mail já está em uso
-      if (users.some(user => user.email === email)) {
+      const emailExists = users.some(u => u.email === email);
+      if (emailExists) {
         reject(new Error('E-mail já cadastrado'));
         return;
       }
-      
+
       // Criar novo usuário
       const newUser = {
         id: crypto.randomUUID(),
@@ -58,11 +59,11 @@ export function AuthProvider({ children }) {
         password,
         contacts: []
       };
-      
+
       // Adicionar à lista de usuários
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
-      
+
       // Login automático após registro
       const userInfo = { id: newUser.id, email: newUser.email };
       localStorage.setItem('currentUser', JSON.stringify(userInfo));
