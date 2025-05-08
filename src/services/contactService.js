@@ -1,58 +1,72 @@
 // Função para recuperar todos os contatos do usuário atual
 export const getUserContacts = (userId) => {
-  const allContacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  return allContacts.filter(contact => contact.userId === userId);
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find((u) => u.id === userId);
+  return user ? user.contacts : [];
 };
 
 // Função para adicionar um novo contato
-export const addContact = (userId, contactData) => {
-  const allContacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  
-  const newContact = {
-    id: crypto.randomUUID(),
-    userId,
-    ...contactData,
-    createdAt: new Date().toISOString()
-  };
-  
-  allContacts.push(newContact);
-  localStorage.setItem('contacts', JSON.stringify(allContacts));
-  
-  return newContact;
+export const addContact = (userId, newContact) => {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const userIndex = users.findIndex((u) => u.id === userId);
+
+  if (userIndex === -1) return;
+
+  users[userIndex].contacts = users[userIndex].contacts || [];
+  newContact.id = crypto.randomUUID(); // se ainda não tiver ID
+  users[userIndex].contacts.push(newContact);
+
+  localStorage.setItem("users", JSON.stringify(users));
 };
+
 
 // Função para editar um contato existente
-export const updateContact = (contactId, contactData) => {
-  const allContacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+export const updateContact = (userId, updatedContact) => {
+  // Recupera os usuários do localStorage
+  const users = JSON.parse(localStorage.getItem("users")) || [];
   
-  const updatedContacts = allContacts.map(contact => {
-    if (contact.id === contactId) {
-      return {
-        ...contact,
-        ...contactData,
-        updatedAt: new Date().toISOString()
-      };
-    }
-    return contact;
-  });
+  // Encontra o usuário pelo ID
+  const userIndex = users.findIndex((u) => u.id === userId);
   
-  localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-  
-  return updatedContacts.find(contact => contact.id === contactId);
+  if (userIndex === -1) return; // Caso o usuário não seja encontrado
+
+  // Atualiza o contato no array de contatos
+  const contactIndex = users[userIndex].contacts.findIndex(
+    (contact) => contact.id === updatedContact.id
+  );
+
+  if (contactIndex !== -1) {
+    users[userIndex].contacts[contactIndex] = updatedContact;
+  }
+
+  // Salva novamente no localStorage
+  localStorage.setItem("users", JSON.stringify(users));
 };
 
+
 // Função para remover um contato
-export const deleteContact = (contactId) => {
-  const allContacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  
-  const filteredContacts = allContacts.filter(contact => contact.id !== contactId);
-  localStorage.setItem('contacts', JSON.stringify(filteredContacts));
-  
-  return true;
+export const deleteContact = (userId, contactId) => {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const userIndex = users.findIndex((u) => u.id === userId);
+  if (userIndex === -1) return;
+
+  users[userIndex].contacts = users[userIndex].contacts.filter(
+    (c) => c.id !== contactId
+  );
+
+  localStorage.setItem("users", JSON.stringify(users));
 };
 
 // Função para obter um contato específico
-export const getContact = (contactId) => {
-  const allContacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  return allContacts.find(contact => contact.id === contactId) || null;
+export const getContact = (userId) => {
+  // Recupera os usuários do localStorage
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  
+  // Encontra o usuário pelo ID
+  const user = users.find((u) => u.id === userId);
+  
+  // Adiciona um id baseado no índice de cada contato
+  return user
+    ? user.contacts.map((contact, index) => ({ ...contact, id: index }))
+    : [];
 };

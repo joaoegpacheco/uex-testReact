@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -8,6 +9,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +39,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem('currentUser', JSON.stringify(userInfo));
       setCurrentUser(userInfo);
       resolve(userInfo);
+
+      //Redireciona para a home
+      navigate('/');
     });
   };
 
@@ -68,14 +73,20 @@ export function AuthProvider({ children }) {
       const userInfo = { id: newUser.id, email: newUser.email };
       localStorage.setItem('currentUser', JSON.stringify(userInfo));
       setCurrentUser(userInfo);
-      
+
       resolve(userInfo);
+
+      //Redireciona para o login
+      navigate('/login');
     });
   };
 
   const logout = () => {
     localStorage.removeItem('currentUser');
     setCurrentUser(null);
+    
+    //Redireciona para o login
+    navigate('/login');
   };
 
   const value = {
