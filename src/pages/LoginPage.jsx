@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +13,7 @@ const schema = yup.object().shape({
 });
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const { login } = useAuth();
   const [error, setError] = useState('');
 
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const onSubmit = async ({ email, password }) => {
     try {
       await login(email, password);
+      navigate("/");
     } catch (err) {
       setError(err.message || 'Erro ao fazer login');
     }
