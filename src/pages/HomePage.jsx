@@ -16,6 +16,8 @@ import "@material/web/textfield/outlined-text-field";
 import "@material/web/button/filled-button";
 import "@material/web/iconbutton/icon-button";
 import "@material/web/icon/icon";
+import "@material/web/select/outlined-select.js";
+import "@material/web/select/select-option.js";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ export default function HomePage() {
   const [passwordError, setPasswordError] = useState("");
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc"); // "asc" ou "desc"
 
   // Carrega os contatos do usuário logado
   const loadContacts = () => {
@@ -72,18 +75,18 @@ export default function HomePage() {
   // Adiciona um novo contato ao localStorage após validações
   const handleAddContact = async (e) => {
     e.preventDefault();
-  
+
     if (!cpf.isValid(form.cpf)) return alert("CPF inválido!");
-  
+
     const coords = await getCoordinates();
     if (!coords) return alert("Erro ao obter localização.");
-  
+
     const updatedContact = {
       ...form,
       latitude: coords.lat,
       longitude: coords.lng,
     };
-  
+
     if (form.id) {
       // Modo de edição
       updateContact(currentUser.id, updatedContact);
@@ -91,11 +94,11 @@ export default function HomePage() {
       // Modo de criação
       if (contacts.find((c) => c.cpf === form.cpf))
         return alert("CPF já cadastrado.");
-      
+
       updatedContact.id = crypto.randomUUID();
       addContact(currentUser.id, updatedContact);
     }
-  
+
     loadContacts();
     setForm({
       name: "",
@@ -112,7 +115,7 @@ export default function HomePage() {
       id: undefined,
     });
     setShowContactForm(false);
-  };  
+  };
 
   // Exclui um contato por ID
   const handleDeleteContact = (contactId) => {
@@ -129,7 +132,7 @@ export default function HomePage() {
   const handleEditContact = (contactId) => {
     const contactToEdit = contacts.find((c) => c.id === contactId);
     if (!contactToEdit) return;
-  
+
     // Abre o formulário preenchido
     setForm({
       name: contactToEdit.name,
@@ -145,10 +148,10 @@ export default function HomePage() {
       longitude: contactToEdit.longitude,
       id: contactToEdit.id, // importante para atualizar
     });
-  
+
     setEditingContact(contactToEdit);
     setShowContactForm(true);
-  };  
+  };
 
   // Exclui permanentemente a conta do usuário após validação de senha
   const handleAccountDeletion = () => {
@@ -173,7 +176,7 @@ export default function HomePage() {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_API_KEY,
   });
 
-  // Filtra os contatos de acordo com a busca por nome ou CPF
+  // Filtra os contatos de acordo com a busca por nome ou CPF e ordenação
   const filteredContacts = contacts
     .filter(
       (c) =>
@@ -182,7 +185,13 @@ export default function HomePage() {
         c.cpf?.includes(filter) ||
         ""
     )
-    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    .sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      return sortOrder === "asc"
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    });
 
   return (
     <div style={{ padding: 24 }}>
@@ -239,17 +248,38 @@ export default function HomePage() {
       )}
 
       <h3>Contatos</h3>
-      <md-outlined-text-field
-        label="Buscar por nome ou CPF"
-        value={filter}
-        onInput={(e) => setFilter(e.target.value)}
-      />
+      <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
+        <md-outlined-text-field
+          label="Buscar por nome ou CPF"
+          value={filter}
+          oninput={(e) => setFilter(e.target.value)}
+          style={{ width: "150px" }}
+        />
+        <md-outlined-select
+          label="Ordenar por"
+          value={sortOrder}
+          onchange={(e) => setSortOrder(e.target.value)}
+          style={{ width: "100px", marginLeft: "16px" }}
+        >
+          <md-select-option value="asc" selected={sortOrder === "asc"}>
+            <div slot="headline">Nome (A-Z)</div>
+          </md-select-option>
+          <md-select-option value="desc" selected={sortOrder === "desc"}>
+            <div slot="headline">Nome (Z-A)</div>
+          </md-select-option>
+        </md-outlined-select>
+      </div>
 
       <ul style={{ marginTop: 20, padding: 0 }}>
         {filteredContacts.map((c) => (
           <li
             key={c.id}
-            style={{ display: 'flex', flexDirection: 'column', marginBottom: 10, cursor: "pointer" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginBottom: 10,
+              cursor: "pointer",
+            }}
             onClick={() =>
               setSelectedLocation({
                 lat: parseFloat(c.latitude),
@@ -259,25 +289,24 @@ export default function HomePage() {
           >
             <strong>{c.name}</strong> {c.cpf} / {c.phone} <br />
             {c.street}, {c.number}, {c.city} - {c.state} <br />
-            <div style={{display: 'flex', gap: 10, margin: 5}}>
+            <div style={{ display: "flex", gap: 10, margin: 5 }}>
               <md-filled-button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEditContact(c.id);
-              }}
-            >
-              editar
-            </md-filled-button>
-            <md-filled-button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteContact(c.id);
-              }}
-            >
-              deletar
-            </md-filled-button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditContact(c.id);
+                }}
+              >
+                editar
+              </md-filled-button>
+              <md-filled-button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteContact(c.id);
+                }}
+              >
+                deletar
+              </md-filled-button>
             </div>
-            
           </li>
         ))}
       </ul>
@@ -285,15 +314,17 @@ export default function HomePage() {
       {selectedLocation && isLoaded && (
         <div style={{ display: "flex", marginTop: 24 }}>
           <div style={{ flex: 1 }}>
-            <h4>{
-                    filteredContacts.find(
-                      (c) =>
-                        c.latitude === selectedLocation.lat &&
-                        c.longitude === selectedLocation.lng
-                    )?.name
-                  }</h4>
+            <h4>
+              {
+                filteredContacts.find(
+                  (c) =>
+                    c.latitude === selectedLocation.lat &&
+                    c.longitude === selectedLocation.lng
+                )?.name
+              }
+            </h4>
 
-              <span>{`Latitude: ${selectedLocation.lat}, Longitude: ${selectedLocation.lng}`}</span>
+            <span>{`Latitude: ${selectedLocation.lat}, Longitude: ${selectedLocation.lng}`}</span>
           </div>
 
           <div style={{ flex: 1, height: "400px" }}>
