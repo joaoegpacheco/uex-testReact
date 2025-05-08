@@ -24,10 +24,10 @@ export const addContact = (userId, newContact) => {
 export const updateContact = (userId, updatedContact) => {
   // Recupera os usuários do localStorage
   const users = JSON.parse(localStorage.getItem("users")) || [];
-  
+
   // Encontra o usuário pelo ID
   const userIndex = users.findIndex((u) => u.id === userId);
-  
+
   if (userIndex === -1) return; // Caso o usuário não seja encontrado
 
   // Atualiza o contato no array de contatos
@@ -37,12 +37,11 @@ export const updateContact = (userId, updatedContact) => {
 
   if (contactIndex !== -1) {
     users[userIndex].contacts[contactIndex] = updatedContact;
+
+    // Salva novamente no localStorage
+    localStorage.setItem("users", JSON.stringify(users));
   }
-
-  // Salva novamente no localStorage
-  localStorage.setItem("users", JSON.stringify(users));
 };
-
 
 // Função para remover um contato
 export const deleteContact = (userId, contactId) => {

@@ -30,7 +30,7 @@ const schema = yup.object().shape({
   state: yup.string().required("Estado é obrigatório"),
 });
 
-export default function ContactForm({ onSuccess, setShowContactForm }) {
+export default function ContactForm({ onSuccess, setShowContactForm, contactToEdit }) {
   const { currentUser } = useAuth();
   const [error, setError] = useState("");
 
@@ -77,18 +77,26 @@ export default function ContactForm({ onSuccess, setShowContactForm }) {
     fetchCepData();
   }, [zipCode, setValue]);
 
-  const onSubmit = async (formData) => {
-    setError("");
-
-    const fullAddress = `${formData.street}, ${formData.number}, ${formData.city}, ${formData.state}`;
-    try {
-      const coords = await searchCoordinates(fullAddress);
-      formData.latitude = coords.lat;
-      formData.longitude = coords.lng;
-    } catch {
-      return setError("Erro ao obter coordenadas do endereço.");
+  // Preenche o formulário ao editar
+  useEffect(() => {
+    if (contactToEdit) {
+      reset({
+        name: contactToEdit.name || "",
+        cpf: contactToEdit.cpf || "",
+        phone: contactToEdit.phone || "",
+        zipCode: contactToEdit.zipCode || "",
+        street: contactToEdit.street || "",
+        number: contactToEdit.number || "",
+        complement: contactToEdit.complement || "",
+        city: contactToEdit.city || "",
+        state: contactToEdit.state || "",
+      });
+    } else {
+      reset(); // limpa o formulário se não estiver editando
     }
+  }, [contactToEdit, reset]);
 
+  const onSubmit = async (formData) => {
     // Obter lista de usuários
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const userIndex = users.findIndex((u) => u.id === currentUser.id);
@@ -96,34 +104,50 @@ export default function ContactForm({ onSuccess, setShowContactForm }) {
     if (userIndex === -1) {
       return setError("Usuário não encontrado.");
     }
-
+  
     const user = users[userIndex];
-
-    const cpfAlreadyExists = user.contacts?.some((c) => c.cpf === formData.cpf);
-    if (cpfAlreadyExists) {
-      return setError("Contato com esse CPF já existe.");
+  
+    // Obtem coordenadas
+    const fullAddress = `${formData.street}, ${formData.number}, ${formData.city}, ${formData.state}`;
+    const coords = await searchCoordinates(fullAddress);
+    formData.latitude = coords.lat;
+    formData.longitude = coords.lng;
+  
+    // Edita contato a partir do ID
+    if (contactToEdit) {
+      const updatedContact = {
+        ...contactToEdit,
+        ...formData,
+      };
+      const contactIndex = user.contacts.findIndex((c) => c.id === contactToEdit.id);
+      user.contacts[contactIndex] = updatedContact;
+    } else {
+      if (user.contacts?.some((c) => c.cpf === formData.cpf)) {
+        return setError("Contato com esse CPF já existe.");
+      }
+      // Adicionar contato com ID
+      user.contacts = [
+        ...(user.contacts || []),
+        {
+          // Gera ID único para o novo contato
+          id: crypto.randomUUID(),
+          ...formData,
+        },
+      ];
     }
-
-    // Gerar ID único para o novo contato
-    const newContact = {
-      id: crypto.randomUUID(),
-      ...formData,
-    };
-
-    // Adicionar contato com ID
-    user.contacts = [...(user.contacts || []), newContact];
+  
     users[userIndex] = user;
-
     // Salvar no localStorage
     localStorage.setItem("users", JSON.stringify(users));
-
+  
     // Limpar o formulário
     reset();
 
-    // Notificar sucesso
-    if (onSuccess) onSuccess();
-    setShowContactForm(false)
+    // Sucesso
+    onSuccess();
+    setShowContactForm(false);
   };
+  
 
   return (
     <form

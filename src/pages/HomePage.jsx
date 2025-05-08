@@ -41,6 +41,7 @@ export default function HomePage() {
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showContactForm, setShowContactForm] = useState(false);
+  const [editingContact, setEditingContact] = useState(null);
 
   // Carrega os contatos do usuário logado
   const loadContacts = () => {
@@ -71,25 +72,31 @@ export default function HomePage() {
   // Adiciona um novo contato ao localStorage após validações
   const handleAddContact = async (e) => {
     e.preventDefault();
-
+  
     if (!cpf.isValid(form.cpf)) return alert("CPF inválido!");
-    if (contacts.find((c) => c.cpf === form.cpf))
-      return alert("CPF já cadastrado.");
-
+  
     const coords = await getCoordinates();
     if (!coords) return alert("Erro ao obter localização.");
-
-    const newContact = {
-      id: crypto.randomUUID(), // ← Gera um ID único
+  
+    const updatedContact = {
       ...form,
       latitude: coords.lat,
       longitude: coords.lng,
     };
-
-    addContact(currentUser.id, newContact);
+  
+    if (form.id) {
+      // Modo de edição
+      updateContact(currentUser.id, updatedContact);
+    } else {
+      // Modo de criação
+      if (contacts.find((c) => c.cpf === form.cpf))
+        return alert("CPF já cadastrado.");
+      
+      updatedContact.id = crypto.randomUUID();
+      addContact(currentUser.id, updatedContact);
+    }
+  
     loadContacts();
-
-    // Limpa o formulário e fecha o modal
     setForm({
       name: "",
       cpf: "",
@@ -102,9 +109,10 @@ export default function HomePage() {
       state: "",
       latitude: "",
       longitude: "",
+      id: undefined,
     });
     setShowContactForm(false);
-  };
+  };  
 
   // Exclui um contato por ID
   const handleDeleteContact = (contactId) => {
@@ -117,15 +125,30 @@ export default function HomePage() {
     }
   };
 
-  // Exclui um contato por ID
+  // Edita um contato por ID
   const handleEditContact = (contactId) => {
-
-    // Edita o contato do localStorage, passando o índice (id)
-      updateContact(currentUser.id, contactId);
-
-      // Recarrega os contatos após a exclusão
-      loadContacts();
-  };
+    const contactToEdit = contacts.find((c) => c.id === contactId);
+    if (!contactToEdit) return;
+  
+    // Abre o formulário preenchido
+    setForm({
+      name: contactToEdit.name,
+      cpf: contactToEdit.cpf,
+      phone: contactToEdit.phone,
+      cep: contactToEdit.cep,
+      street: contactToEdit.street,
+      number: contactToEdit.number,
+      complement: contactToEdit.complement,
+      city: contactToEdit.city,
+      state: contactToEdit.state,
+      latitude: contactToEdit.latitude,
+      longitude: contactToEdit.longitude,
+      id: contactToEdit.id, // importante para atualizar
+    });
+  
+    setEditingContact(contactToEdit);
+    setShowContactForm(true);
+  };  
 
   // Exclui permanentemente a conta do usuário após validação de senha
   const handleAccountDeletion = () => {
@@ -200,13 +223,18 @@ export default function HomePage() {
         Cadastrar Novo Contato
       </md-filled-button>
 
-      {/* Formulário de novo contato */}
+      {/* Formulário de criação e edição de contato */}
       {showContactForm && (
         <ContactForm
           form={form}
           setForm={setForm}
+          contactToEdit={editingContact}
           handleAddContato={handleAddContact}
           setShowContactForm={setShowContactForm}
+          onSuccess={() => {
+            loadContacts();
+            setEditingContact(null); // limpa após salvar
+          }}
         />
       )}
 
