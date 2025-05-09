@@ -18,6 +18,7 @@ import { UserActions } from "../components/UserActions";
 import { DeleteAccountDialog } from "../components/DeleteAccountDialog";
 import { ContactFilterBar } from "../components/ContactFilterBar";
 import { ContactList } from "../components/ContactList";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 
 import "@material/web/textfield/outlined-text-field";
 import "@material/web/button/filled-button";
@@ -33,27 +34,30 @@ export default function HomePage() {
   const { currentUser, logout } = useAuth();
   const contactFormRef = useRef(null);
 
-  const [contacts, setContacts] = useState([]);
-  const [filter, setFilter] = useState("");
-  const [form, setForm] = useState({
+  const initialFormState = {
     name: "",
     cpf: "",
     phone: "",
-    cep: "",
     street: "",
     number: "",
     complement: "",
     city: "",
     state: "",
+    zipCode: "",
     latitude: "",
     longitude: "",
-  });
+  };
+
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState("");
+  const [form, setForm] = useState(initialFormState);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
+  const [contactToDelete, setContactToDelete] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" ou "desc"
 
   // Carrega os contatos do usuário logado
@@ -110,31 +114,18 @@ export default function HomePage() {
     }
 
     loadContacts();
-    setForm({
-      name: "",
-      cpf: "",
-      phone: "",
-      cep: "",
-      street: "",
-      number: "",
-      complement: "",
-      city: "",
-      state: "",
-      latitude: "",
-      longitude: "",
-      id: undefined,
-    });
+    setForm(initialFormState);
     setShowContactForm(false);
   };
 
-  // Exclui um contato por ID
-  const handleDeleteContact = (contactId) => {
-    if (confirm("Deseja realmente excluir este contato?")) {
+  const confirmDeleteContact = () => {
+    if (contactToDelete !== null) {
       // Exclui o contato do localStorage, passando o índice (id)
-      deleteContact(currentUser.id, contactId);
+      deleteContact(currentUser.id, contactToDelete);
 
       // Recarrega os contatos após a exclusão
       loadContacts();
+      setContactToDelete(null);
     }
   };
 
@@ -203,72 +194,63 @@ export default function HomePage() {
         : nameB.localeCompare(nameA);
     });
 
+  const handleCreateNewContact = () => {
+    setEditingContact(false); // garante que não está em modo de edição
+    setForm(initialFormState); // limpa os campos do formulário
+    setShowContactForm(true); // abre o modal
+  };
+
   return (
     <div className="main-layout">
-      {/* Modal de confirmação de exclusão de conta */}
-      {showDeleteDialog && (
-        <DeleteAccountDialog
-          open={showDeleteDialog}
-          onClose={() => setShowDeleteDialog(false)}
-          onConfirm={handleAccountDeletion}
-          password={passwordInput}
-          onPasswordChange={setPasswordInput}
-          passwordError={passwordError}
-        />
-      )}
+      {/* Modal de confirmação de exclusão da conta do usuário */}
+      <DeleteAccountDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleAccountDeletion}
+        password={passwordInput}
+        onPasswordChange={setPasswordInput}
+        passwordError={passwordError}
+      />
 
       <h2>Bem-vindo, {currentUser?.email}</h2>
+      {/* Ações do usuário */}
       <UserActions
-        onCreate={() => setShowContactForm(true)}
+        onCreate={handleCreateNewContact}
         onDeleteAccount={() => setShowDeleteDialog(true)}
         onLogout={logout}
       />
 
       {/* Formulário de criação e edição de contato */}
-      {showContactForm && (
-        <md-dialog style={{ width: "auto" }} open>
-          <div slot="headline">
-            {editingContact ? "Edite seu contato" : "Cadastre um novo contato"}
-          </div>
-          <div slot="content" method="dialog">
-            <ContactForm
-              ref={contactFormRef}
-              form={form}
-              setForm={setForm}
-              contactToEdit={editingContact}
-              handleAddContato={handleAddContact}
-              setShowContactForm={setShowContactForm}
-              setEditingContact={setEditingContact}
-              onSuccess={() => {
-                loadContacts();
-                setEditingContact(null); // limpa após salvar
-              }}
-            />
-          </div>
-          <div
-            slot="actions"
-            style={{ display: "flex", gap: 16, justifyContent: "center" }}
-          >
-            <md-outlined-button
-              style={{ width: "100%" }}
-              onClick={() => {
-                setShowContactForm(false);
-                setEditingContact(false);
-              }}
-            >
-              Cancelar
-            </md-outlined-button>
-            <md-filled-button
-              style={{ width: "100%" }}
-              onClick={() => contactFormRef.current?.submitForm()}
-            >
-              Salvar
-            </md-filled-button>
-          </div>
-        </md-dialog>
-      )}
+      <ConfirmDialog
+        open={showContactForm !== false}
+        title={
+          editingContact ? "Edite seu contato" : "Cadastre um novo contato"
+        }
+        children={
+          <ContactForm
+            ref={contactFormRef}
+            form={form}
+            setForm={setForm}
+            contactToEdit={editingContact}
+            handleAddContato={handleAddContact}
+            setShowContactForm={setShowContactForm}
+            setEditingContact={setEditingContact}
+            onSuccess={() => {
+              loadContacts();
+              setEditingContact(null); // limpa após salvar
+            }}
+          />
+        }
+        onConfirm={() => contactFormRef.current?.submitForm()}
+        onCancel={() => {
+          setShowContactForm(false);
+          setEditingContact(false);
+          setForm(initialFormState); // limpa os campos
+        }}
+      />
 
       <h3>Contatos</h3>
+      {/* Filtros */}
       <ContactFilterBar
         filter={filter}
         setFilter={setFilter}
@@ -276,13 +258,24 @@ export default function HomePage() {
         setSortOrder={setSortOrder}
       />
 
+      {/* Lista de contatos cadastrados */}
       <ContactList
         contacts={filteredContacts}
         onSelect={setSelectedLocation}
         onEdit={handleEditContact}
-        onDelete={handleDeleteContact}
+        onDelete={setContactToDelete}
       />
 
+      {/* Modal de exclusão do contato */}
+      <ConfirmDialog
+        open={contactToDelete !== null}
+        title="Excluir contato"
+        message="Deseja realmente excluir este contato?"
+        onConfirm={confirmDeleteContact}
+        onCancel={() => setContactToDelete(null)}
+      />
+
+      {/* Renderiza o mapa se for clicado em algum contato */}
       {selectedLocation && isLoaded && (
         <Map latitude={selectedLocation.lat} longitude={selectedLocation.lng} />
       )}
