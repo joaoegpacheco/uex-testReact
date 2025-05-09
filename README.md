@@ -26,13 +26,13 @@ Instalar dependências:
 npm install
 ```
 
-- Criar API Key do Google Maps:
-Crie em console.cloud.google.com
+- Criar API Key do Google Maps em console.cloud.google.com
 
 - Ative a API: Geocoding API
 
-Crie um arquivo .env (utilize o .env.example como exemplo para criar o seu arquivo) e este deve ser criado na raiz do projeto.
-Certifique-se que o arquivo está no mesmo diretório de arquivos como package. 
+Crie um arquivo .env (utilize o .env.example como exemplo para criar o seu arquivo) preenchendo 
+ ⁠VITE_GOOGLE_API_KEY  ⁠com a chave gerada no passo anterior.
+Este arquivo deve ser criado na raiz do projeto.
 
 Executar o projeto:
 ```
