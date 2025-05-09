@@ -1,18 +1,9 @@
 // Função para recuperar todos os contatos do usuário atual
-export function getUserContacts(userId) {
-  const allContacts = JSON.parse(localStorage.getItem("contacts") || "{}");
-
-  const userContacts = allContacts[userId];
-
-  // Remove tudo se os contatos estiverem corrompidos
-  if (import.meta.env.DEV && !Array.isArray(userContacts)) {
-    console.warn("Contatos corrompidos detectados. Limpando localStorage.");
-    localStorage.removeItem("contacts");
-    return [];
-  }
-
-  return userContacts || [];
-}
+export const getUserContacts = (userId) => {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find((u) => u.id === userId);
+  return user ? user.contacts : [];
+};
 
 
 // Função para adicionar um novo contato
