@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -7,8 +7,6 @@ import { searchCep } from "../services/viacep";
 import { searchCoordinates } from "../services/geocode";
 import { useAuth } from "../contexts/AuthContext";
 import "@material/web/textfield/outlined-text-field";
-import "@material/web/button/filled-button";
-import "@material/web/button/outlined-button";
 
 const schema = yup.object().shape({
   name: yup.string().required("Nome é obrigatório"),
@@ -31,12 +29,7 @@ const schema = yup.object().shape({
   state: yup.string().required("Estado é obrigatório"),
 });
 
-export default function ContactForm({
-  onSuccess,
-  setShowContactForm,
-  contactToEdit,
-  setEditingContact,
-}) {
+const ContactForm = forwardRef(({ onSuccess, setShowContactForm, contactToEdit }, ref) => {
   const { currentUser } = useAuth();
   const [error, setError] = useState("");
 
@@ -61,6 +54,11 @@ export default function ContactForm({
       state: "",
     },
   });
+
+  // Expor função submitForm ao componente pai
+  useImperativeHandle(ref, () => ({
+    submitForm: () => handleSubmit(onSubmit)(),
+  }));
 
   const zipCode = watch("zipCode");
 
@@ -121,13 +119,8 @@ export default function ContactForm({
 
     // Edita contato a partir do ID
     if (contactToEdit) {
-      const updatedContact = {
-        ...contactToEdit,
-        ...formData,
-      };
-      const contactIndex = user.contacts.findIndex(
-        (c) => c.id === contactToEdit.id
-      );
+      const updatedContact = { ...contactToEdit, ...formData };
+      const contactIndex = user.contacts.findIndex((c) => c.id === contactToEdit.id);
       user.contacts[contactIndex] = updatedContact;
     } else {
       if (user.contacts?.some((c) => c.cpf === formData.cpf)) {
@@ -157,10 +150,7 @@ export default function ContactForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      style={{ display: "grid", gap: 16, padding: 16 }}
-    >
+    <form style={{ display: "grid", gap: 16 }}>
       <md-outlined-text-field
         label="Nome"
         {...register("name")}
@@ -203,7 +193,10 @@ export default function ContactForm({
         supportingText={errors.number?.message}
         required
       />
-      <md-outlined-text-field label="Complemento" {...register("complement")} />
+      <md-outlined-text-field
+        label="Complemento"
+        {...register("complement")}
+      />
       <md-outlined-text-field
         label="Cidade"
         {...register("city")}
@@ -218,22 +211,9 @@ export default function ContactForm({
         supportingText={errors.state?.message}
         required
       />
-
       {error && <div style={{ color: "red" }}>{error}</div>}
-      <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-        <md-outlined-button
-          style={{ width: "100%" }}
-          onClick={() => {
-            setShowContactForm(false);
-            setEditingContact(false);
-          }}
-        >
-          Cancelar
-        </md-outlined-button>
-        <md-filled-button style={{ width: "100%" }} type="submit">
-          Salvar
-        </md-filled-button>
-      </div>
     </form>
   );
-}
+});
+
+export default ContactForm;

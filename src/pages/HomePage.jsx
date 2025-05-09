@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { cpf } from "cpf-cnpj-validator";
 import { useJsApiLoader } from "@react-google-maps/api";
@@ -19,10 +19,12 @@ import "@material/web/iconbutton/icon-button";
 import "@material/web/icon/icon";
 import "@material/web/select/outlined-select.js";
 import "@material/web/select/select-option.js";
+import '@material/web/dialog/dialog.js';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const contactFormRef = useRef(null);
 
   const [contacts, setContacts] = useState([]);
   const [filter, setFilter] = useState("");
@@ -199,12 +201,13 @@ export default function HomePage() {
       {/* Modal de confirmação de exclusão de conta */}
       {showDeleteDialog && (
         <md-dialog open>
-          <div slot="headline">Excluir conta</div>
+          <div slot="headline">Deseja excluir sua conta?</div>
           <div slot="content" method="dialog">
             <p>Digite sua senha para confirmar a exclusão da conta.</p>
             <md-outlined-text-field
               type="password"
               label="Senha"
+              style={{width: "100%"}}
               value={passwordInput}
               onInput={(e) => setPasswordInput(e.target.value)}
               error={!!passwordError}
@@ -224,18 +227,22 @@ export default function HomePage() {
 
       <h2>Bem-vindo, {currentUser?.email}</h2>
       <div className="container-layout" style={{ display: "flex", gap: 16 }}>
+        <md-filled-button className="button-styled" onClick={() => setShowContactForm(true)}>
+          Cadastrar novo contato
+        </md-filled-button>
         <md-outlined-button className="button-styled" onClick={() => setShowDeleteDialog(true)}>
           Excluir minha conta
         </md-outlined-button>
         <md-filled-button className="button-styled" onClick={logout}>Sair</md-filled-button>
-        <md-filled-button className="button-styled" onClick={() => setShowContactForm(true)}>
-          Cadastrar Contato
-        </md-filled-button>
         </div>        
 
       {/* Formulário de criação e edição de contato */}
       {showContactForm && (
+        <md-dialog style={{ width: "auto" }} open>
+          <div slot="headline">{editingContact ? "Edite seu contato" : "Cadastre um novo contato"}</div>
+          <div slot="content" method="dialog">
         <ContactForm
+        ref={contactFormRef}
           form={form}
           setForm={setForm}
           contactToEdit={editingContact}
@@ -247,6 +254,22 @@ export default function HomePage() {
             setEditingContact(null); // limpa após salvar
           }}
         />
+        </div>
+        <div slot="actions" style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+        <md-outlined-button
+          style={{ width: "100%" }}
+          onClick={() => {
+            setShowContactForm(false);
+            setEditingContact(false);
+          }}
+        >
+          Cancelar
+        </md-outlined-button>
+        <md-filled-button style={{ width: "100%" }} onClick={() => contactFormRef.current?.submitForm()}>
+          Salvar
+        </md-filled-button>
+      </div>
+        </md-dialog>
       )}
 
       <h3>Contatos</h3>
@@ -255,7 +278,7 @@ export default function HomePage() {
           label="Nome ou CPF"
           value={filter}
           oninput={(e) => setFilter(e.target.value)}
-          style={{ width: 355 }}
+          style={{ width: "100%" }}
         />
         <md-outlined-select
           label="Ordenar por"
@@ -272,7 +295,7 @@ export default function HomePage() {
       </div>
 
       <ul style={{ marginTop: 20, padding: 0 }}>
-        {filteredContacts.map((c) => (
+        {filteredContacts.length > 0 ? filteredContacts.map((c) => (
           <li
             key={c.id}
             style={{
@@ -317,7 +340,11 @@ export default function HomePage() {
               </md-filled-button>
             </div>
           </li>
-        ))}
+        )) : (
+          <p style={{textAlign: 'center'}}>
+          Você ainda não possui contatos cadastrados 😭
+        </p>
+        )}
       </ul>
 
       {selectedLocation && isLoaded && (

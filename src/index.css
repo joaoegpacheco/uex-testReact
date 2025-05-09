@@ -55,7 +55,7 @@ body.expanded {
   font-size: var(--font-size);
   transition: all 0.3s ease;
   background-color: #f5f5f5;
-  min-height: var(--min-height);
+  min-height: 100vh;
   max-width: var(--max-width);
   width: var(--width);
 }
