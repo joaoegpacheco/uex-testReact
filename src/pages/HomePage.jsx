@@ -14,6 +14,7 @@ import ContactForm from "../components/ContactForm";
 import { Map } from "../components/Map";
 import "@material/web/textfield/outlined-text-field";
 import "@material/web/button/filled-button";
+import "@material/web/button/outlined-button";
 import "@material/web/iconbutton/icon-button";
 import "@material/web/icon/icon";
 import "@material/web/select/outlined-select.js";
@@ -194,12 +195,12 @@ export default function HomePage() {
     });
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="main-layout">
       {/* Modal de confirmação de exclusão de conta */}
       {showDeleteDialog && (
         <md-dialog open>
           <div slot="headline">Excluir conta</div>
-          <div slot="content">
+          <div slot="content" method="dialog">
             <p>Digite sua senha para confirmar a exclusão da conta.</p>
             <md-outlined-text-field
               type="password"
@@ -211,9 +212,9 @@ export default function HomePage() {
             />
           </div>
           <div slot="actions">
-            <md-text-button onClick={() => setShowDeleteDialog(false)}>
+            <md-outlined-button onClick={() => setShowDeleteDialog(false)}>
               Cancelar
-            </md-text-button>
+            </md-outlined-button>
             <md-filled-button onClick={handleAccountDeletion}>
               Excluir
             </md-filled-button>
@@ -222,15 +223,15 @@ export default function HomePage() {
       )}
 
       <h2>Bem-vindo, {currentUser?.email}</h2>
-      <md-filled-button onClick={() => setShowDeleteDialog(true)}>
-        Excluir minha conta
-      </md-filled-button>
-      <md-filled-button onClick={logout}>Sair</md-filled-button>
-
-      <h3>Adicionar Contato</h3>
-      <md-filled-button onClick={() => setShowContactForm(true)}>
-        Cadastrar Novo Contato
-      </md-filled-button>
+      <div className="container-layout" style={{ display: "flex", gap: 16 }}>
+        <md-outlined-button className="button-styled" onClick={() => setShowDeleteDialog(true)}>
+          Excluir minha conta
+        </md-outlined-button>
+        <md-filled-button className="button-styled" onClick={logout}>Sair</md-filled-button>
+        <md-filled-button className="button-styled" onClick={() => setShowContactForm(true)}>
+          Cadastrar Contato
+        </md-filled-button>
+        </div>        
 
       {/* Formulário de criação e edição de contato */}
       {showContactForm && (
@@ -240,6 +241,7 @@ export default function HomePage() {
           contactToEdit={editingContact}
           handleAddContato={handleAddContact}
           setShowContactForm={setShowContactForm}
+          setEditingContact={setEditingContact}
           onSuccess={() => {
             loadContacts();
             setEditingContact(null); // limpa após salvar
@@ -248,18 +250,17 @@ export default function HomePage() {
       )}
 
       <h3>Contatos</h3>
-      <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
+      <div style={{ display: "flex", gap: 20, width: "100%" }}>
         <md-outlined-text-field
-          label="Buscar por nome ou CPF"
+          label="Nome ou CPF"
           value={filter}
           oninput={(e) => setFilter(e.target.value)}
-          style={{ width: "150px" }}
+          style={{ width: 355 }}
         />
         <md-outlined-select
           label="Ordenar por"
           value={sortOrder}
           onchange={(e) => setSortOrder(e.target.value)}
-          style={{ width: "100px", marginLeft: "16px" }}
         >
           <md-select-option value="asc" selected={sortOrder === "asc"}>
             <div slot="headline">Nome (A-Z)</div>
@@ -279,6 +280,9 @@ export default function HomePage() {
               flexDirection: "column",
               marginBottom: 10,
               cursor: "pointer",
+              border: "1px solid gray",
+              borderRadius: 5,
+              padding: 10,
             }}
             onClick={() =>
               setSelectedLocation({
@@ -287,9 +291,14 @@ export default function HomePage() {
               })
             }
           >
-            <strong>{c.name}</strong> {c.cpf} / {c.phone} <br />
-            {c.street}, {c.number}, {c.city} - {c.state} <br />
-            <div style={{ display: "flex", gap: 10, margin: 5 }}>
+            <strong>{c.name}</strong> <br />
+            CPF: {c.cpf} <br />
+            Telefone: {c.phone} <br />
+            Endereço: {c.street}, {c.number} <br />
+            Cidade: {c.city}<br />
+            Estado: {c.state} <br />
+            CEP: {c.zipCode} <br />
+            <div style={{ display: "flex", gap: 10, marginTop: 15, justifyContent: "center" }}>
               <md-filled-button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -313,26 +322,10 @@ export default function HomePage() {
 
       {selectedLocation && isLoaded && (
         <div style={{ display: "flex", marginTop: 24 }}>
-          <div style={{ flex: 1 }}>
-            <h4>
-              {
-                filteredContacts.find(
-                  (c) =>
-                    c.latitude === selectedLocation.lat &&
-                    c.longitude === selectedLocation.lng
-                )?.name
-              }
-            </h4>
-
-            <span>{`Latitude: ${selectedLocation.lat}, Longitude: ${selectedLocation.lng}`}</span>
-          </div>
-
-          <div style={{ flex: 1, height: "400px" }}>
-            <Map
-              latitude={selectedLocation.lat}
-              longitude={selectedLocation.lng}
-            />
-          </div>
+          <Map
+            latitude={selectedLocation.lat}
+            longitude={selectedLocation.lng}
+          />
         </div>
       )}
     </div>
