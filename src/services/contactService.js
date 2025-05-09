@@ -5,7 +5,6 @@ export const getUserContacts = (userId) => {
   return user ? user.contacts : [];
 };
 
-
 // Função para adicionar um novo contato
 export const addContact = (userId, newContact) => {
   const users = JSON.parse(localStorage.getItem("users")) || [];
