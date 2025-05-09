@@ -1,10 +1,35 @@
-export function ConfirmDialog({ open, title, message, contactform, onConfirm, onCancel }) {
+import { useEffect, useRef } from "react";
+
+export function ConfirmDialog({
+  open,
+  title,
+  message,
+  contactform,
+  onConfirm,
+  onCancel,
+}) {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleClose = () => {
+      onCancel(); // Atualiza o estado `open` para `false`
+    };
+
+    dialog.addEventListener("close", handleClose);
+    return () => {
+      dialog.removeEventListener("close", handleClose);
+    };
+  }, [onCancel]);
+
   if (!open) return null;
 
   return (
-    <md-dialog style={{ width: "auto" }} open noCloseOnOutsideClick>
+    <md-dialog ref={dialogRef} style={{ width: "auto" }} open>
       <div slot="headline">{title}</div>
-      <div slot="content" method="dialog">
+      <div slot="content">
         <p>{message}</p>
         {contactform}
       </div>
