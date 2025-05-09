@@ -62,14 +62,29 @@ export default function HomePage() {
 
   // Carrega os contatos do usuário logado
   const loadContacts = () => {
-    const data = getUserContacts(currentUser.id);
-    console.log("Contatos carregados:", data);
-    setContacts(data);
+    let data = getUserContacts(currentUser.id);
+
+    // Filtra contatos inválidos
+    const validContacts = data.filter((contact) => {
+      return (
+        contact &&
+        typeof contact === "object" &&
+        typeof contact.name === "string" &&
+        typeof contact.cpf === "string"
+      );
+    });
+
+    if (validContacts.length !== data.length) {
+      console.warn("Contatos inválidos foram ignorados.");
+    }
+
+    setContacts(validContacts);
   };
 
   // Carrega os contatos ao iniciar a página
   useEffect(() => {
     if (currentUser) {
+      // Carrega contatos se tudo estiver certo
       loadContacts();
     }
     if (!currentUser) {
@@ -182,13 +197,11 @@ export default function HomePage() {
     .filter(
       (c) =>
         c.name?.toLowerCase().includes(filter.toLowerCase()) ||
-        "" ||
-        c.cpf?.includes(filter) ||
-        ""
+        c.cpf?.includes(filter)
     )
     .sort((a, b) => {
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
+      const nameA = (a.name || "").toLowerCase();
+      const nameB = (b.name || "").toLowerCase();
       return sortOrder === "asc"
         ? nameA.localeCompare(nameB)
         : nameB.localeCompare(nameA);
@@ -226,7 +239,7 @@ export default function HomePage() {
         title={
           editingContact ? "Edite seu contato" : "Cadastre um novo contato"
         }
-        children={
+        contactform={
           <ContactForm
             ref={contactFormRef}
             form={form}
