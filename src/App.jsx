@@ -8,8 +8,9 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={!isAuthenticated ? <Navigate to="/login" /> : <Navigate to="/dashboard" />} />
+      <Route path="/dashboard" element={<HomePage />} />
+      <Route path="/login" element={isAuthenticated ? <HomePage /> : <LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
     </Routes>
   );

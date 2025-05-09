@@ -28,7 +28,7 @@ export default function LoginPage() {
   const onSubmit = async ({ email, password }) => {
     try {
       await login(email, password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Erro ao fazer login");
     }
