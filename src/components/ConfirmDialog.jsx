@@ -2,7 +2,7 @@ export function ConfirmDialog({ open, title, message, contactform, onConfirm, on
   if (!open) return null;
 
   return (
-    <md-dialog style={{ width: "auto" }} open>
+    <md-dialog style={{ width: "auto" }} open noCloseOnOutsideClick>
       <div slot="headline">{title}</div>
       <div slot="content" method="dialog">
         <p>{message}</p>

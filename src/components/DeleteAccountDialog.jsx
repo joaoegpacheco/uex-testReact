@@ -9,7 +9,7 @@ export function DeleteAccountDialog({
   if (!open) return null;
 
   return (
-    <md-dialog open>
+    <md-dialog open noCloseOnOutsideClick>
       <div slot="headline">Deseja excluir sua conta?</div>
       <div slot="content" method="dialog">
         <p>Digite sua senha para confirmar a exclusão da conta.</p>
