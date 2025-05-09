@@ -31,7 +31,7 @@ export function ContactList({ contacts, onSelect, onEdit, onDelete }) {
           <strong>{c.name}</strong> <br />
           CPF: {c.cpf} <br />
           Telefone: {c.phone} <br />
-          Endereço: {c.street}, {c.number} <br />
+          Endereço: {c.street}, {c.number} {c.complement.length > 0 && "- "+c.complement} <br />
           Cidade: {c.city} <br />
           Estado: {c.state} <br />
           CEP: {c.zipCode} <br />
