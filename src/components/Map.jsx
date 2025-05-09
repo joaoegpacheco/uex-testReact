@@ -1,4 +1,4 @@
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 
 export function Map({ latitude, longitude }) {
   const { isLoaded } = useJsApiLoader({
@@ -9,7 +9,7 @@ export function Map({ latitude, longitude }) {
 
   return (
     <GoogleMap
-      mapContainerStyle={{ width: '100%', height: '300px' }}
+      mapContainerStyle={{ width: "100%", height: "300px" }}
       center={{ lat: latitude, lng: longitude }}
       zoom={15}
     >
