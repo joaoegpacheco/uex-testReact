@@ -1,12 +1,49 @@
-# React + Vite
+# UEX - Gerenciamento de Lista de Contatos.
+Desafio Técnico para Desenvolvedor ReactJS PL
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Aplicação criada a partir do Vite, versão 6.3.5
 
-Currently, two official plugins are available:
+Nesta aplicação o usuário pode:
+- Se cadastrar para utilizar a plataforma.
+- Realizar login e logout.
+- Gerenciar sua lista de contatos.
+- Realizar pesquisa de endereço como ajuda ao cadastro de contatos.
+- Excluir a sua própria conta.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Esta é uma aplicação onde a base de dados local, se encontra no localstorage, onde armazenar-se todos os dados dos usuários e seus respectivos contatos.
 
-## Expanding the ESLint configuration
+*O Vite é uma ferramenta de construção que visa proporcionar uma experiência de desenvolvimento mais rápida e enxuta para projetos web modernos.*
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Versão Node
+> v20.18.2
+
+Versão Npm
+> 10.8.2
+
+Versão React
+> ^19.1.0
+
+Instalar dependências:
+```
+npm install
+```
+
+Crie um arquivo .env e este deve ser criado na raiz do projeto. 
+Certifique-se que o arquivo está no mesmo diretório de arquivos como package. 
+Dentro do arquivo crie a seguinte variável de ambiente: VITE_GOOGLE_API_KEY, e adicione nela o resultado da sua Key pessoal cadastrada na ferramenta do Google Maps API.
+
+Executar o projeto:
+```
+npm run dev
+```
+
+# Dependências utilizadas para o desafio:
+> react-hook-form (formulários), react-router-dom (rotas), uuid (id criptografado e randômico), yup e @hookform/resolvers (validação e formatação de formulários), dotenv (utilizaarmazenar variáveis de ambiente), cpf-cnpj-validator (validador de cpf), @react-google-maps/api (GoogleMaps), axios (chamada de APIs).
+
+# Design System:
+> Material Web 3 (https://m3.material.io/)
+
+# Integrações:
+- Via Cep: *Webservice gratuito de alto desempenho para consulta de Código de Endereçamento Postal (CEP) do Brasil.*
+- Google Maps: *Ferramenta que permite aos desenvolvedores integrar funcionalidades do Google Maps, como mapas, dados de localização e rotas.*
+
