@@ -1,4 +1,4 @@
-export function ConfirmDialog({ open, title, message, children, onConfirm, onCancel }) {
+export function ConfirmDialog({ open, title, message, contactform, onConfirm, onCancel }) {
   if (!open) return null;
 
   return (
@@ -6,7 +6,7 @@ export function ConfirmDialog({ open, title, message, children, onConfirm, onCan
       <div slot="headline">{title}</div>
       <div slot="content" method="dialog">
         <p>{message}</p>
-        {children}
+        {contactform}
       </div>
       <div slot="actions">
         <md-outlined-button onClick={onCancel}>Cancelar</md-outlined-button>
