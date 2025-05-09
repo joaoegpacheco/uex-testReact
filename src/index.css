@@ -32,7 +32,7 @@ body.compact {
 body.medium {
   --padding: 24px;
   --font-size: 16px;
-  --max-width: 1240px;
+  --max-width: 768px;
   --min-height: 100vh;
   --flex-direction: column;
   --width-button: 100%;

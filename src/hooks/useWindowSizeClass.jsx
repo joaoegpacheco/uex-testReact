@@ -17,6 +17,6 @@ export function useWindowSizeClass() {
 
 function getSizeClass(width) {
   if (width < 600) return "compact";
-  if (width < 1240) return "medium";
+  if (width < 768) return "medium";
   return "expanded";
 }

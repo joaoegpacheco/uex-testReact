@@ -40,7 +40,7 @@ export function ContactList({ contacts, onSelect, onEdit, onDelete }) {
               display: "flex",
               gap: 10,
               marginTop: 15,
-              justifyContent: "center",
+              justifyContent: "end",
             }}
           >
             <md-filled-button
