@@ -14,16 +14,22 @@ const schema = yup.object().shape({
     .string()
     .required("CPF é obrigatório")
     .test("valid-cpf", "CPF inválido", (value) => {
-      if (!value) return false;
-      return cpf.isValid(value);
+      const raw = value?.replace(/\D/g, "");
+      return cpf.isValid(raw || "");
     }),
-  phone: yup.string().required("Telefone é obrigatório"),
+  phone: yup
+    .string()
+    .required("Telefone é obrigatório")
+    .matches(/^\(\d{2}\) \d{5}-\d{4}$/, "Telefone inválido"),
   zipCode: yup
     .string()
     .required("CEP é obrigatório")
-    .matches(/^\d{8}$/, "CEP deve conter 8 dígitos"),
+    .matches(/^\d{5}-\d{3}$/, "CEP inválido"),
   street: yup.string().required("Rua é obrigatória"),
-  number: yup.string().required("Número é obrigatório"),
+  number: yup
+    .string()
+    .required("Número é obrigatório")
+    .matches(/^\d+$/, "Apenas números são permitidos"),
   complement: yup.string(),
   city: yup.string().required("Cidade é obrigatória"),
   state: yup.string().required("Estado é obrigatório"),
@@ -154,6 +160,7 @@ const ContactForm = forwardRef(
 
     return (
       <form style={{ display: "grid", gap: 16 }}>
+        {error && <div style={{ color: "red" }}>{error}</div>}
         <md-outlined-text-field
           label="Nome"
           {...register("name")}
@@ -163,21 +170,42 @@ const ContactForm = forwardRef(
         />
         <md-outlined-text-field
           label="CPF"
-          {...register("cpf")}
+          value={watch("cpf")}
+          onInput={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+            const formatted = raw
+              .replace(/(\d{3})(\d)/, "$1.$2")
+              .replace(/(\d{3})(\d)/, "$1.$2")
+              .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            setValue("cpf", formatted);
+          }}
           error={!!errors.cpf}
           supportingText={errors.cpf?.message}
           required
         />
         <md-outlined-text-field
           label="Telefone"
-          {...register("phone")}
+          value={watch("phone")}
+          onInput={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+            const formatted = raw
+              .replace(/^(\d{2})(\d)/g, "($1) $2")
+              .replace(/(\d{5})(\d)/, "$1-$2")
+              .slice(0, 15);
+            setValue("phone", formatted);
+          }}
           error={!!errors.phone}
           supportingText={errors.phone?.message}
           required
         />
         <md-outlined-text-field
           label="CEP"
-          {...register("zipCode")}
+          value={watch("zipCode")}
+          onInput={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+            const formatted = raw.replace(/^(\d{5})(\d)/, "$1-$2").slice(0, 9);
+            setValue("zipCode", formatted);
+          }}
           error={!!errors.zipCode}
           supportingText={errors.zipCode?.message}
           required
@@ -191,7 +219,11 @@ const ContactForm = forwardRef(
         />
         <md-outlined-text-field
           label="Número"
-          {...register("number")}
+          value={watch("number")}
+          onInput={(e) => {
+            const onlyDigits = e.target.value.replace(/\D/g, "");
+            setValue("number", onlyDigits);
+          }}
           error={!!errors.number}
           supportingText={errors.number?.message}
           required
@@ -214,7 +246,6 @@ const ContactForm = forwardRef(
           supportingText={errors.state?.message}
           required
         />
-        {error && <div style={{ color: "red" }}>{error}</div>}
       </form>
     );
   }
