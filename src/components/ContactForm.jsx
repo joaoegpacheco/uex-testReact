@@ -15,21 +15,30 @@ const schema = yup.object().shape({
     .required("CPF é obrigatório")
     .test("valid-cpf", "CPF inválido", (value) => {
       const raw = value?.replace(/\D/g, "");
-      return cpf.isValid(raw || "");
+      return raw?.length === 11 && cpf.isValid(raw || "");
     }),
   phone: yup
     .string()
     .required("Telefone é obrigatório")
-    .matches(/^\(\d{2}\) \d{5}-\d{4}$/, "Telefone inválido"),
+    .test("valid-phone", "Telefone inválido", (value) => {
+      const raw = value?.replace(/\D/g, "");
+      return raw?.length === 11;
+    }),
   zipCode: yup
     .string()
     .required("CEP é obrigatório")
-    .matches(/^\d{5}-\d{3}$/, "CEP inválido"),
+    .test("valid-cep", "CEP inválido", (value) => {
+      const raw = value?.replace(/\D/g, "");
+      return raw?.length === 8;
+    }),
   street: yup.string().required("Rua é obrigatória"),
   number: yup
     .string()
     .required("Número é obrigatório")
-    .matches(/^\d+$/, "Apenas números são permitidos"),
+    .matches(
+      /^[1-9]\d{0,4}$/,
+      "Número deve ter até 5 dígitos e não pode começar com 0"
+    ),
   complement: yup.string(),
   city: yup.string().required("Cidade é obrigatória"),
   state: yup.string().required("Estado é obrigatório"),
@@ -70,22 +79,24 @@ const ContactForm = forwardRef(
     const zipCode = watch("zipCode");
 
     useEffect(() => {
-      const fetchCepData = async () => {
-        if (zipCode.length === 8) {
-          try {
-            const data = await searchCep(zipCode);
-            if (!data.erro) {
-              setValue("street", data.logradouro);
-              setValue("city", data.localidade);
-              setValue("state", data.uf);
+      if (zipCode.replace(/\D/g, "").length === 8) {
+        const fetchCepData = async () => {
+          const rawZip = zipCode.replace(/\D/g, "");
+          if (rawZip.length === 8) {
+            try {
+              const data = await searchCep(rawZip);
+              if (!data.erro) {
+                setValue("street", data.logradouro);
+                setValue("city", data.localidade);
+                setValue("state", data.uf);
+              }
+            } catch {
+              setError("Erro ao buscar o CEP.");
             }
-          } catch {
-            setError("Erro ao buscar o CEP.");
           }
-        }
-      };
-
-      fetchCepData();
+        };
+        fetchCepData();
+      }
     }, [zipCode, setValue]);
 
     // Preenche o formulário ao editar
@@ -172,11 +183,13 @@ const ContactForm = forwardRef(
           label="CPF"
           value={watch("cpf")}
           onInput={(e) => {
-            const raw = e.target.value.replace(/\D/g, "");
+            const input = e.target;
+            const raw = input.value.replace(/\D/g, "").slice(0, 11); // máx 11 dígitos
             const formatted = raw
               .replace(/(\d{3})(\d)/, "$1.$2")
               .replace(/(\d{3})(\d)/, "$1.$2")
               .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            input.value = formatted;
             setValue("cpf", formatted);
           }}
           error={!!errors.cpf}
@@ -187,11 +200,12 @@ const ContactForm = forwardRef(
           label="Telefone"
           value={watch("phone")}
           onInput={(e) => {
-            const raw = e.target.value.replace(/\D/g, "");
+            const input = e.target;
+            const raw = input.value.replace(/\D/g, "").slice(0, 11); // máx 11 dígitos
             const formatted = raw
               .replace(/^(\d{2})(\d)/g, "($1) $2")
-              .replace(/(\d{5})(\d)/, "$1-$2")
-              .slice(0, 15);
+              .replace(/(\d{5})(\d)/, "$1-$2");
+            input.value = formatted;
             setValue("phone", formatted);
           }}
           error={!!errors.phone}
@@ -202,8 +216,10 @@ const ContactForm = forwardRef(
           label="CEP"
           value={watch("zipCode")}
           onInput={(e) => {
-            const raw = e.target.value.replace(/\D/g, "");
-            const formatted = raw.replace(/^(\d{5})(\d)/, "$1-$2").slice(0, 9);
+            const input = e.target;
+            const raw = input.value.replace(/\D/g, "").slice(0, 8); // máx 8 dígitos
+            const formatted = raw.replace(/^(\d{5})(\d)/, "$1-$2");
+            input.value = formatted;
             setValue("zipCode", formatted);
           }}
           error={!!errors.zipCode}
@@ -221,8 +237,11 @@ const ContactForm = forwardRef(
           label="Número"
           value={watch("number")}
           onInput={(e) => {
-            const onlyDigits = e.target.value.replace(/\D/g, "");
-            setValue("number", onlyDigits);
+            const input = e.target;
+            const raw = input.value.replace(/\D/g, "");
+            const filtered = raw.replace(/^0+/, "").slice(0, 5); // remove zeros à esquerda e limita a 5 dígitos
+            input.value = filtered;
+            setValue("number", filtered);
           }}
           error={!!errors.number}
           supportingText={errors.number?.message}
