@@ -30,7 +30,7 @@ const schema = yup.object().shape({
 });
 
 const ContactForm = forwardRef(
-  ({ onSuccess, setShowContactForm, contactToEdit }, ref) => {
+  ({ onSuccess, setShowContactForm, contactToEdit, form }, ref) => {
     const { currentUser } = useAuth();
     const [error, setError] = useState("");
 
@@ -97,9 +97,9 @@ const ContactForm = forwardRef(
           state: contactToEdit.state || "",
         });
       } else {
-        reset(); // limpa o formulário se não estiver editando
+        reset(form); // limpa o formulário se não estiver editando
       }
-    }, [contactToEdit, reset]);
+    }, [contactToEdit, reset, form]);
 
     const onSubmit = async (formData) => {
       // Obter lista de usuários
