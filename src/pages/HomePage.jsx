@@ -15,7 +15,6 @@ import { searchCoordinates } from "../services/geocode";
 import ContactForm from "../components/ContactForm";
 import { Map } from "../components/Map";
 import { UserActions } from "../components/UserActions";
-import { DeleteAccountDialog } from "../components/DeleteAccountDialog";
 import { ContactFilterBar } from "../components/ContactFilterBar";
 import { ContactList } from "../components/ContactList";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -216,13 +215,25 @@ export default function HomePage() {
   return (
     <div className="main-layout">
       {/* Modal de confirmação de exclusão da conta do usuário */}
-      <DeleteAccountDialog
+      <ConfirmDialog
         open={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
+        message="Digite sua senha para confirmar a exclusão da conta."
+        title="Deseja excluir sua conta?"
+        contactform={
+          <md-outlined-text-field
+            type="password"
+            label="Senha"
+            style={{ width: "100%" }}
+            value={passwordInput}
+            onInput={(e) => setPasswordInput(e.target.value)}
+            error={!!passwordError}
+            supporting-text={passwordError}
+          />
+        }
         onConfirm={handleAccountDeletion}
-        password={passwordInput}
-        onPasswordChange={setPasswordInput}
-        passwordError={passwordError}
+        onCancel={() => {
+          setShowDeleteDialog(false);
+        }}
       />
 
       <h2>Bem-vindo, {currentUser?.email}</h2>
@@ -235,7 +246,13 @@ export default function HomePage() {
 
       {/* Formulário de criação e edição de contato */}
       <ConfirmDialog
-        open={showContactForm !== false}
+        open={showContactForm}
+        cancel={() => {
+          setShowContactForm(false);
+        }}
+        closed={() => {
+          setShowContactForm(false);
+        }}
         title={
           editingContact ? "Edite seu contato" : "Cadastre um novo contato"
         }
