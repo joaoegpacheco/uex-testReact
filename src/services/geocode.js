@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 export async function searchCoordinates(address) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(

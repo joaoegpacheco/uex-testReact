@@ -19,7 +19,6 @@ export const addContact = (userId, newContact) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
-
 // Função para editar um contato existente
 export const updateContact = (userId, updatedContact) => {
   // Recupera os usuários do localStorage
@@ -60,10 +59,10 @@ export const deleteContact = (userId, contactId) => {
 export const getContact = (userId) => {
   // Recupera os usuários do localStorage
   const users = JSON.parse(localStorage.getItem("users")) || [];
-  
+
   // Encontra o usuário pelo ID
   const user = users.find((u) => u.id === userId);
-  
+
   // Adiciona um id baseado no índice de cada contato
   return user
     ? user.contacts.map((contact, index) => ({ ...contact, id: index }))

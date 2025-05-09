@@ -1,13 +1,13 @@
-import { createContext, useContext, useEffect } from 'react';
-import { useWindowSizeClass } from '../hooks/useWindowSizeClass';
+import { createContext, useContext, useEffect } from "react";
+import { useWindowSizeClass } from "../hooks/useWindowSizeClass";
 
-const WindowSizeClassContext = createContext('expanded');
+const WindowSizeClassContext = createContext("expanded");
 
 export const WindowSizeClassProvider = ({ children }) => {
   const sizeClass = useWindowSizeClass();
 
   useEffect(() => {
-    document.body.classList.remove('compact', 'medium', 'expanded');
+    document.body.classList.remove("compact", "medium", "expanded");
     document.body.classList.add(sizeClass);
   }, [sizeClass]);
 

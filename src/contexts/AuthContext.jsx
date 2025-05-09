@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
 
   // Verificar se já existe um usuário logado ao iniciar a aplicação
   useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
@@ -25,35 +25,37 @@ export function AuthProvider({ children }) {
   const login = (email, password) => {
     return new Promise((resolve, reject) => {
       // Buscar usuários cadastrados
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
 
       // Verificar se o usuário existe e a senha está correta
-      const user = users.find(u => u.email === email && u.password === password);
+      const user = users.find(
+        (u) => u.email === email && u.password === password
+      );
       if (!user) {
-        reject(new Error('Credenciais inválidas'));
+        reject(new Error("Credenciais inválidas"));
         return;
       }
 
       // Salvar usuário logado no localStorage e no estado
       const userInfo = { id: user.id, email: user.email };
-      localStorage.setItem('currentUser', JSON.stringify(userInfo));
+      localStorage.setItem("currentUser", JSON.stringify(userInfo));
       setCurrentUser(userInfo);
       resolve(userInfo);
 
       //Redireciona para a home
-      navigate('/');
+      navigate("/");
     });
   };
 
   const register = (email, password) => {
     return new Promise((resolve, reject) => {
       // Buscar usuários cadastrados
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
 
       // Verificar se o e-mail já está em uso
-      const emailExists = users.some(u => u.email === email);
+      const emailExists = users.some((u) => u.email === email);
       if (emailExists) {
-        reject(new Error('E-mail já cadastrado'));
+        reject(new Error("E-mail já cadastrado"));
         return;
       }
 
@@ -62,38 +64,38 @@ export function AuthProvider({ children }) {
         id: crypto.randomUUID(),
         email,
         password,
-        contacts: []
+        contacts: [],
       };
 
       // Adicionar à lista de usuários
       users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem("users", JSON.stringify(users));
 
       // Login automático após registro
       const userInfo = { id: newUser.id, email: newUser.email };
-      localStorage.setItem('currentUser', JSON.stringify(userInfo));
+      localStorage.setItem("currentUser", JSON.stringify(userInfo));
       setCurrentUser(userInfo);
 
       resolve(userInfo);
 
       //Redireciona para o login
-      navigate('/login');
+      navigate("/login");
     });
   };
 
   const logout = () => {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem("currentUser");
     setCurrentUser(null);
-    
+
     //Redireciona para o login
-    navigate('/login');
+    navigate("/login");
   };
 
   const value = {
     currentUser,
     login,
     register,
-    logout
+    logout,
   };
 
   return (
