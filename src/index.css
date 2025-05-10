@@ -27,6 +27,9 @@ body.compact {
   --min-height: none;
   --flex-direction: column;
   --width-button: 100%;
+  --width-container: 300px;
+  --gap: 16px;
+  --display: flex;
 }
 
 body.medium {
@@ -36,6 +39,9 @@ body.medium {
   --min-height: 100vh;
   --flex-direction: column;
   --width-button: 100%;
+  --width-container: 400px;
+  --gap: 16px;
+  --display: flex;
 }
 
 body.expanded {
@@ -45,6 +51,8 @@ body.expanded {
   --min-height: 100vh;
   --flex-direction: row;
   --width-button: 300;
+  --width-container: 400px;
+  --gap: 16px;
 }
 
 .main-layout {
@@ -69,6 +77,13 @@ body.expanded {
   background-color: #f5f5f5;
   max-width: var(--max-width);
   width: var(--width);
+}
+
+.div-form {
+  width: var(--width-container);
+  display: flex;
+  flex-direction: var(--flex-direction);
+  gap: var(--gap);
 }
 
 .button-styled {
