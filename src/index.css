@@ -82,7 +82,7 @@ body.expanded {
 .div-form {
   width: var(--width-container);
   display: flex;
-  flex-direction: var(--flex-direction);
+  flex-direction: column;
   gap: var(--gap);
 }
 
