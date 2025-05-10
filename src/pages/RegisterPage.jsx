@@ -1,13 +1,10 @@
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
 import * as yup from "yup";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import "@material/web/textfield/outlined-text-field";
-import "@material/web/button/filled-button";
+import { AuthForm } from "../components/AuthForm";
+import { useState } from "react";
 
-const schema = yup.object().shape({
+const registerSchema = yup.object().shape({
   email: yup.string().email("Email inválido").required("O email é obrigatório"),
   password: yup
     .string()
@@ -24,15 +21,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
-
-  const onSubmit = async ({ email, password }) => {
+  const handleRegister = async ({ email, password }) => {
     try {
       await registerUser(email, password);
       navigate("/");
@@ -42,52 +31,22 @@ export default function RegisterPage() {
   };
 
   return (
-    <form
-      className="main-layout"
-      onSubmit={handleSubmit(onSubmit)}
-      style={{
-        gap: "16px",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-      }}
-    >
-      <h2>Cadastro</h2>
-
-      <div
-        className="div-form"
-      >
-        <md-outlined-text-field
-          label="Email"
-          type="email"
-          {...register("email")}
-          error={!!errors.email}
-          supporting-text={errors.email?.message}
-        />
-
-        <md-outlined-text-field
-          label="Senha"
-          type="password"
-          {...register("password")}
-          error={!!errors.password}
-          supporting-text={errors.password?.message}
-        />
-
-        <md-outlined-text-field
-          label="Confirmar Senha"
-          type="password"
-          {...register("confirm")}
-          error={!!errors.confirm}
-          supporting-text={errors.confirm?.message}
-        />
-
-        {error && <div style={{ color: "red" }}>{error}</div>}
-
-        <md-filled-button type="submit">Cadastrar</md-filled-button>
+    <AuthForm
+      title="Cadastro"
+      schema={registerSchema}
+      fields={[
+        { name: "email", label: "Email", type: "email" },
+        { name: "password", label: "Senha", type: "password" },
+        { name: "confirm", label: "Confirmar Senha", type: "password" },
+      ]}
+      onSubmit={handleRegister}
+      error={error}
+      setError={setError}
+      footer={
         <p>
           Já tem conta? <Link to="/login">Entrar</Link>
         </p>
-      </div>
-    </form>
+      }
+    />
   );
 }

@@ -1,13 +1,10 @@
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
-import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import "@material/web/textfield/outlined-text-field";
-import "@material/web/button/filled-button";
+import { AuthForm } from "../components/AuthForm";
+import { useState } from "react";
 
-const schema = yup.object().shape({
+const loginSchema = yup.object().shape({
   email: yup.string().email("Email inválido").required("O email é obrigatório"),
   password: yup.string().required("A senha é obrigatória"),
 });
@@ -17,15 +14,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
-
-  const onSubmit = async ({ email, password }) => {
+  const handleLogin = async ({ email, password }) => {
     try {
       await login(email, password);
       navigate("/dashboard");
@@ -35,44 +24,21 @@ export default function LoginPage() {
   };
 
   return (
-    <form
-      className="main-layout"
-      onSubmit={handleSubmit(onSubmit)}
-      style={{
-        gap: "16px",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-      }}
-    >
-      <h2>Login</h2>
-
-      <div
-        className="div-form"
-      >
-        <md-outlined-text-field
-          label="Email"
-          type="email"
-          {...register("email")}
-          error={!!errors.email}
-          supporting-text={errors.email?.message}
-        />
-
-        <md-outlined-text-field
-          label="Senha"
-          type="password"
-          {...register("password")}
-          error={!!errors.password}
-          supporting-text={errors.password?.message}
-        />
-
-        {error && <div style={{ color: "red" }}>{error}</div>}
-
-        <md-filled-button type="submit">Entrar</md-filled-button>
+    <AuthForm
+      title="Login"
+      schema={loginSchema}
+      fields={[
+        { name: "email", label: "Email", type: "email" },
+        { name: "password", label: "Senha", type: "password" },
+      ]}
+      onSubmit={handleLogin}
+      error={error}
+      setError={setError}
+      footer={
         <p>
           Não tem conta? <Link to="/register">Cadastrar-se</Link>
         </p>
-      </div>
-    </form>
+      }
+    />
   );
 }
