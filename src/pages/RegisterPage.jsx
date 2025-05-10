@@ -55,12 +55,7 @@ export default function RegisterPage() {
       <h2>Cadastro</h2>
 
       <div
-        style={{
-          width: 400,
-          gap: "16px",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="div-form"
       >
         <md-outlined-text-field
           label="Email"
