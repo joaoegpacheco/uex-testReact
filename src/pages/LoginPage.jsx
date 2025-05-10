@@ -48,12 +48,7 @@ export default function LoginPage() {
       <h2>Login</h2>
 
       <div
-        style={{
-          width: 400,
-          gap: "16px",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="div-form"
       >
         <md-outlined-text-field
           label="Email"
